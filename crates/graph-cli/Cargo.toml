@@ -1,0 +1,12 @@
+[package]
+name = "graph-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+description = "clap binary exposing each algorithm as a subcommand"
+
+[dependencies]
