@@ -1,39 +1,67 @@
-# rust-graph-algorithms
+<p align="center">
+  <img src="assets/hero.svg" alt="rust-graph-algorithms — cache-friendly Rust, provable contracts, 100% line coverage" width="1280" />
+</p>
 
 [![CI](https://github.com/paiml/rust-graph-algorithms/actions/workflows/ci.yml/badge.svg)](https://github.com/paiml/rust-graph-algorithms/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#license)
 [![MSRV](https://img.shields.io/badge/MSRV-1.95-orange.svg)](rust-toolchain.toml)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](Makefile)
+[![pmat comply](https://img.shields.io/badge/pmat%20comply-COMPLIANT-brightgreen.svg)](Makefile)
+[![pv lint](https://img.shields.io/badge/pv%20lint-PASS-brightgreen.svg)](contracts/)
+
+# rust-graph-algorithms
 
 Reference Rust workspace for course **c12 — Graph Algorithms with
 Rust** in the Coursera Rust for Data Engineering specialization.
 
-Cache-friendly Rust implementations of classical graph algorithms —
-BFS, DFS, Dijkstra, degree and PageRank centrality, weakly-connected
-components, Kosaraju SCC — plus Graphviz DOT export and a single-binary
-CLI (`graph`) that runs each algorithm against JSON input on stdin.
+The workspace ships **two layers**:
 
-Three runtime contracts are asserted on every successful CLI run:
-edge-count consistency, PageRank normalization, and component
-partition. Specs in
-[`contracts/graph-algorithms-v1.yaml`](contracts/graph-algorithms-v1.yaml),
+1. **Pure-Rust algorithm crates** — cache-friendly implementations of
+   BFS, DFS, Dijkstra, degree and PageRank centrality, weakly-connected
+   components, Kosaraju SCC — plus a Graphviz DOT exporter and a
+   single-binary CLI (`graph`) that drives every algorithm against
+   JSON on stdin.
+2. **Real-`aprender-graph` demo crates** — working code that consumes
+   the published [`aprender-graph 0.31.2`](https://crates.io/crates/aprender-graph)
+   crate and the [`aprender-contracts 0.31.2`](https://crates.io/crates/aprender-contracts)
+   library through `pmat query`. Every numeric and API claim that
+   ships in the c12 lesson SVGs is verified by these demo crates at
+   runtime.
+
+**Four runtime contracts** are asserted on every successful CLI /
+demo run; their YAML specs live in [`contracts/`](contracts) and are
 linted by `pv lint contracts/` in CI.
 
 ## Workspace layout
 
-- [`crates/graph-core`](crates/graph-core) — `NodeId`, `Edge`, `Graph`,
-  `GraphError`, runtime invariant `assert_edge_count_consistent`
-- [`crates/graph-traversal`](crates/graph-traversal) — BFS, DFS,
-  Dijkstra, runtime invariant `assert_bfs_distance_monotonic`
-- [`crates/graph-centrality`](crates/graph-centrality) — out-degree
-  centrality, PageRank power iteration, runtime invariant
-  `assert_pagerank_normalized`
-- [`crates/graph-community`](crates/graph-community) —
-  weakly-connected components and Kosaraju SCC, runtime invariant
-  `assert_components_partition`
-- [`crates/graph-viz`](crates/graph-viz) — Graphviz DOT export
-- [`crates/graph-cli`](crates/graph-cli) — `graph` binary that wires
-  all five algorithm crates behind a clap subcommand interface
+### Algorithm crates
+
+| Crate | Role | Runtime invariant |
+|-------|------|-------------------|
+| [`graph-core`](crates/graph-core) | `NodeId`, `Edge`, `Graph`, `GraphError` | `assert_edge_count_consistent` |
+| [`graph-traversal`](crates/graph-traversal) | BFS, DFS, Dijkstra | `assert_bfs_distance_monotonic` |
+| [`graph-centrality`](crates/graph-centrality) | out-degree, PageRank power iteration | `assert_pagerank_normalized` |
+| [`graph-community`](crates/graph-community) | weakly-connected, Kosaraju SCC | `assert_components_partition` |
+| [`graph-viz`](crates/graph-viz) | Graphviz DOT export | — |
+| [`graph-cli`](crates/graph-cli) | `graph` binary wiring all five | runs every contract above |
+
+### Demo + contract-checker crates
+
+| Crate | Role |
+|-------|------|
+| [`aprender-demo`](crates/aprender-demo) | Working demo of real `aprender-graph 0.31.2`. Builds a 5-node fixture, runs BFS / PageRank / Kosaraju, asserts three runtime contracts. Companion to lesson 1.1.4. |
+| [`aprender-contracts-demo`](crates/aprender-contracts-demo) | Parses YAML contracts via `provable_contracts::schema`, shells out to `pmat query` to discover bound functions, returns a typed `BindingReport`. Companion to lesson 5.1.5. |
+| [`svg-layout-checker`](crates/svg-layout-checker) | Falsifier for the c12 SVG layout contract — five structural floors (canvas size, shape count, named-group bounds, fill diversity, font-size floor) checked against any SVG source. |
+
+> **Namespace note.** `aprender-graph` 0.31.2 keeps a legacy
+> `[lib] name = "trueno_graph"` for backward compatibility. We
+> collapse that at the dependency boundary using Cargo's `package = `
+> rename so consumer code only ever sees `aprender_graph`:
+> ```toml
+> [dependencies]
+> aprender_graph = { package = "aprender-graph", version = "0.31.2", default-features = false }
+> ```
+> Then `use aprender_graph::*;` works directly. One namespace, end to end.
 
 ## Install
 
@@ -44,10 +72,9 @@ cargo build --release --workspace
 ./target/release/graph --help
 ```
 
-## Quick start
+## Quick start — the `graph` CLI
 
 ```bash
-# Run BFS on a tiny triangle.
 echo '{"nodes":3,"edges":[
   {"from":0,"to":1,"weight":1},
   {"from":1,"to":2,"weight":1},
@@ -56,9 +83,41 @@ echo '{"nodes":3,"edges":[
 # {"kind":"bfs","order":[0,1,2]}
 ```
 
-The same JSON input drives every subcommand — `bfs`, `dfs`,
-`dijkstra`, `pagerank`, `components`, `scc`, `dot`. Run `graph --help`
-for the full list.
+The same JSON drives every subcommand: `bfs`, `dfs`, `dijkstra`,
+`pagerank`, `components`, `scc`, `dot`. Run `graph --help` for the
+full list.
+
+## Quick start — the aprender-graph demo
+
+```bash
+cargo run -p aprender-demo --example inspect
+# num_nodes:    5
+# bfs_order:    [4, 3, 2, 0]
+# pagerank:     [0.030, 0.030, 0.476, 0.232, 0.232]
+# pagerank_sum: 1.000002
+# sccs:         [[1], [0], [2,3,4]]
+# winner:       2
+```
+
+These are the exact values the c12 1.1.4 SVG quotes — verified, not
+hand-computed.
+
+## Quick start — discover bindings via pmat query
+
+```bash
+cargo run -p aprender-contracts-demo --example discover
+# contract version  : 1.0.0
+# obligation count  : 3
+# bindings          : 3
+#   [1] PageRank normalization on the demo fixture
+#       → run_demo, pagerank_scores_match_expected, build_demo_graph, DemoReport
+#   [2] SCC partition on the demo fixture
+#       → assert_components_partition_passes_on_real_sccs, ...
+#   [3] Hub node 2 is the PageRank winner
+#       → winner_is_node_2, build_demo_graph, pagerank, run_demo
+```
+
+Requires `pmat` on PATH.
 
 ## Local CI gate
 
@@ -68,29 +127,35 @@ Mirror what `gate` runs in CI:
 make ship-ready
 ```
 
-That runs format-check, clippy, doc, test, doc-test, **100% line
-coverage** (`cargo llvm-cov --fail-under-lines 100`), `cargo audit`,
-`cargo deny`, contract lint, Makefile lint, and `pmat comply`.
+That runs format-check, clippy, doc with warnings-as-errors, test,
+doc-test, **100% line coverage** (`cargo llvm-cov --fail-under-lines 100`),
+`cargo audit`, `cargo deny`, contract lint (`pv`), Makefile lint
+(`bashrs`), and `pmat comply`.
 
 ## Provable contracts
 
-Three structural invariants in
-[`contracts/graph-algorithms-v1.yaml`](contracts/graph-algorithms-v1.yaml):
+Four YAML specs in [`contracts/`](contracts), each linted by
+`pv lint contracts/` in CI.
 
-| Equation | Statement |
-|----------|-----------|
-| `edge_count_consistent` | sum of neighbor list lengths equals edge count |
-| `pagerank_normalized` | absolute deviation of score sum from 1.0 below 1e-3 |
-| `components_partition` | components form a partition of the node set |
+| Contract | What it gates |
+|----------|---------------|
+| [`graph-algorithms-v1.yaml`](contracts/graph-algorithms-v1.yaml) | edge-count consistency, PageRank normalization, component partition |
+| [`aprender-demo-v1.yaml`](contracts/aprender-demo-v1.yaml) | demo-fixture PageRank normalization, SCC partition, hub-node-2 winner invariant |
+| [`aprender-contracts-demo-v1.yaml`](contracts/aprender-contracts-demo-v1.yaml) | one-binding-per-obligation, terms-preserved-verbatim, runner-error context propagation |
+| [`svg-layout-v1.yaml`](contracts/svg-layout-v1.yaml) | canvas-size invariant, ≥40 shapes, 5–20 named groups, ≥8 distinct fills, font-size ≥18 |
 
-All three are asserted at runtime in
-[`crates/graph-cli/src/lib.rs`](crates/graph-cli/src/lib.rs) after
-every successful CLI invocation, and the YAML is linted by `pv` in CI.
+Every obligation carries a falsification test id (`FALSIFY-XXX-NNN`)
+that binds the YAML claim to a concrete unit test in the workspace.
+The chain is: YAML → parse → `pmat query` → BindingReport → live
+runtime assert.
 
 ## Status
 
-71 tests / 100% line coverage / 0 clippy warnings / pmat comply
-COMPLIANT / pv lint PASS.
+```
+115 tests / 100% line coverage / 100% function coverage
+0 clippy warnings / 4 provable contracts / pv lint PASS
+pmat comply COMPLIANT / aprender-graph 0.31.2
+```
 
 ## License
 

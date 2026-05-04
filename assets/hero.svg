@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 480" width="1280" height="480">
+<!-- HERO — paiml/rust-graph-algorithms README banner.
+     Oxide-premium chassis matching the c12 lesson masters: hex-pattern
+     navy bg, radial ambient zones, gradient accent strip. The visual
+     subject is the 5-node demo graph — node 2 as the radius-scaled
+     PageRank winner, surrounded by the algorithm chips and stats. -->
+
+<defs>
+  <style>
+    .h { font-family: 'Segoe UI', 'Helvetica Neue', sans-serif; }
+    .m { font-family: 'Cascadia Code', 'Fira Code', monospace; }
+    .label { font-family: 'Segoe UI', sans-serif; letter-spacing: 0.12em; }
+  </style>
+
+  <radialGradient id="bg" cx="50%" cy="40%" r="80%">
+    <stop offset="0%" stop-color="#1e2240"/>
+    <stop offset="100%" stop-color="#0e0e1a"/>
+  </radialGradient>
+  <pattern id="hex" width="60" height="52" patternUnits="userSpaceOnUse">
+    <path d="M30 0 L60 15 L60 37 L30 52 L0 37 L0 15 Z" fill="none" stroke="#fff" stroke-width="0.4" opacity="0.05"/>
+  </pattern>
+  <radialGradient id="zone-cool" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#9c84ff" stop-opacity="0.10"/>
+    <stop offset="100%" stop-color="#9c84ff" stop-opacity="0"/>
+  </radialGradient>
+  <radialGradient id="zone-warm" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#fc9867" stop-opacity="0.08"/>
+    <stop offset="100%" stop-color="#fc9867" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="bar-accent" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#9c84ff"/>
+    <stop offset="50%" stop-color="#fc9867"/>
+    <stop offset="100%" stop-color="#a9dc76"/>
+  </linearGradient>
+  <linearGradient id="card-chip" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#1a2840"/>
+    <stop offset="100%" stop-color="#16213e"/>
+  </linearGradient>
+</defs>
+
+<!-- BACKGROUND -->
+<rect width="1280" height="480" fill="url(#bg)"/>
+<rect width="1280" height="480" fill="url(#hex)"/>
+<ellipse cx="700" cy="240" rx="380" ry="220" fill="url(#zone-cool)"/>
+<ellipse cx="200" cy="240" rx="320" ry="200" fill="url(#zone-warm)"/>
+
+<!-- ═══ TITLE ROW ═══ -->
+<g id="title-row">
+  <text x="60" y="80" class="h" font-size="48" font-weight="700" fill="#eeeeee">rust-graph-algorithms</text>
+  <text x="60" y="118" class="h" font-size="22" fill="#9c84ff" opacity="0.9">Cache-friendly Rust · Provable contracts · 100% line coverage</text>
+  <text x="60" y="148" class="m" font-size="18" fill="#a9dc76">paiml/rust-graph-algorithms · companion to Coursera c12</text>
+</g>
+
+<!-- ═══ GRAPH ILLUSTRATION (middle, the verified PageRank fixture) ═══
+     Edges: 0→2, 1→2, 2→3, 2→4, 3→2, 4→2.
+     Node 2 (hub) gets the largest radius (winner of PageRank 0.476). -->
+<g id="graph-illustration">
+  <!-- edges -->
+  <line x1="540" y1="220" x2="640" y2="280" stroke="#9c84ff" stroke-width="3" opacity="0.6"/>
+  <line x1="740" y1="220" x2="640" y2="280" stroke="#9c84ff" stroke-width="3" opacity="0.6"/>
+  <line x1="640" y1="280" x2="540" y2="380" stroke="#a9dc76" stroke-width="3" opacity="0.7"/>
+  <line x1="640" y1="280" x2="740" y2="380" stroke="#a9dc76" stroke-width="3" opacity="0.7"/>
+  <line x1="540" y1="380" x2="640" y2="280" stroke="#fc9867" stroke-width="3" opacity="0.5"/>
+  <line x1="740" y1="380" x2="640" y2="280" stroke="#fc9867" stroke-width="3" opacity="0.5"/>
+
+  <!-- Node 0 (small — score .030) -->
+  <circle cx="540" cy="220" r="18" fill="#9c84ff" fill-opacity="0.55" stroke="#eeeeee" stroke-width="3"/>
+  <text x="540" y="226" text-anchor="middle" class="m" font-size="18" font-weight="700" fill="#eeeeee">0</text>
+
+  <!-- Node 1 (small — score .030) -->
+  <circle cx="740" cy="220" r="18" fill="#9c84ff" fill-opacity="0.55" stroke="#eeeeee" stroke-width="3"/>
+  <text x="740" y="226" text-anchor="middle" class="m" font-size="18" font-weight="700" fill="#eeeeee">1</text>
+
+  <!-- Node 2 — WINNER (score .476) -->
+  <circle cx="640" cy="280" r="60" fill="none" stroke="#fc9867" stroke-width="2.5" stroke-dasharray="4 6" opacity="0.55"/>
+  <circle cx="640" cy="280" r="46" fill="#fc9867" fill-opacity="0.85" stroke="#eeeeee" stroke-width="3"/>
+  <text x="640" y="292" text-anchor="middle" class="m" font-size="28" font-weight="700" fill="#eeeeee">2</text>
+
+  <!-- Node 3 (medium — score .232) -->
+  <circle cx="540" cy="380" r="28" fill="#a9dc76" fill-opacity="0.7" stroke="#eeeeee" stroke-width="3"/>
+  <text x="540" y="389" text-anchor="middle" class="m" font-size="18" font-weight="700" fill="#eeeeee">3</text>
+
+  <!-- Node 4 (medium — score .232) -->
+  <circle cx="740" cy="380" r="28" fill="#a9dc76" fill-opacity="0.7" stroke="#eeeeee" stroke-width="3"/>
+  <text x="740" y="389" text-anchor="middle" class="m" font-size="18" font-weight="700" fill="#eeeeee">4</text>
+
+  <!-- Tiny caption -->
+  <text x="640" y="180" text-anchor="middle" class="label" font-size="18" font-weight="600" fill="#fc9867">PR-VERIFIED FIXTURE · 5 NODES · radius ∝ score</text>
+</g>
+
+<!-- ═══ ALGORITHM CHIPS (right column).
+     Each chip is one text element with a label tspan + dx-spaced body
+     tspan, so label width drift never collides with the body. -->
+<g id="algo-chips">
+  <rect x="900" y="200" width="340" height="40" rx="20" fill="url(#card-chip)" stroke="#78dce8" stroke-width="2"/>
+  <circle cx="930" cy="220" r="10" fill="#78dce8" fill-opacity="0.85" stroke="#eeeeee" stroke-width="2"/>
+  <text x="952" y="226" class="m" font-size="18" fill="#c8ccd4">
+    <tspan class="label" font-weight="700" fill="#78dce8">BFS</tspan>
+    <tspan dx="32">graph_traversal::bfs</tspan>
+  </text>
+
+  <rect x="900" y="248" width="340" height="40" rx="20" fill="url(#card-chip)" stroke="#fc9867" stroke-width="2"/>
+  <circle cx="930" cy="268" r="10" fill="#fc9867" fill-opacity="0.85" stroke="#eeeeee" stroke-width="2"/>
+  <text x="952" y="274" class="m" font-size="18" fill="#c8ccd4">
+    <tspan class="label" font-weight="700" fill="#fc9867">DFS</tspan>
+    <tspan dx="32">graph_traversal::dfs</tspan>
+  </text>
+
+  <rect x="900" y="296" width="340" height="40" rx="20" fill="url(#card-chip)" stroke="#a9dc76" stroke-width="2"/>
+  <circle cx="930" cy="316" r="10" fill="#a9dc76" fill-opacity="0.85" stroke="#eeeeee" stroke-width="2"/>
+  <text x="952" y="322" class="m" font-size="18" fill="#c8ccd4">
+    <tspan class="label" font-weight="700" fill="#a9dc76">DIJKSTRA</tspan>
+    <tspan dx="32">shortest paths</tspan>
+  </text>
+
+  <rect x="900" y="344" width="340" height="40" rx="20" fill="url(#card-chip)" stroke="#9c84ff" stroke-width="2"/>
+  <circle cx="930" cy="364" r="10" fill="#9c84ff" fill-opacity="0.85" stroke="#eeeeee" stroke-width="2"/>
+  <text x="952" y="370" class="m" font-size="18" fill="#c8ccd4">
+    <tspan class="label" font-weight="700" fill="#9c84ff">PAGERANK</tspan>
+    <tspan dx="32">power iteration</tspan>
+  </text>
+
+  <rect x="900" y="392" width="340" height="40" rx="20" fill="url(#card-chip)" stroke="#fc9867" stroke-width="2"/>
+  <circle cx="930" cy="412" r="10" fill="#fc9867" fill-opacity="0.85" stroke="#eeeeee" stroke-width="2"/>
+  <text x="952" y="418" class="m" font-size="18" fill="#c8ccd4">
+    <tspan class="label" font-weight="700" fill="#fc9867">KOSARAJU</tspan>
+    <tspan dx="32">SCC two-pass</tspan>
+  </text>
+</g>
+
+<!-- ═══ STATS STRIP (bottom). Single centered line — version sits
+     inside the same flow so it can't crash into the badges. -->
+<g id="stats-strip">
+  <rect x="0" y="436" width="1280" height="44" fill="#0e0e1a" opacity="0.85"/>
+  <rect x="0" y="432" width="1280" height="4" fill="url(#bar-accent)"/>
+  <text x="200" y="464" class="m" font-size="18" fill="#eeeeee">
+    <tspan class="label" font-weight="700" fill="#a9dc76">✓ 115 tests</tspan>
+    <tspan dx="22" fill="#8b8fa3">·</tspan>
+    <tspan dx="22" class="label" font-weight="700" fill="#a9dc76">100% lines</tspan>
+    <tspan dx="22" fill="#8b8fa3">·</tspan>
+    <tspan dx="22" class="label" font-weight="700" fill="#9c84ff">4 contracts</tspan>
+    <tspan dx="22" fill="#8b8fa3">·</tspan>
+    <tspan dx="22" class="label" font-weight="700" fill="#fc9867">pmat COMPLIANT</tspan>
+  </text>
+</g>
+
+</svg>
