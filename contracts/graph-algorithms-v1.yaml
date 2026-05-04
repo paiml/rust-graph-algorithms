@@ -1,0 +1,117 @@
+metadata:
+  version: 1.0.0
+  created: '2026-05-04'
+  author: 'PAIML Engineering'
+  description: |
+    Provable contracts for the rust-graph-algorithms reference workspace
+    (Coursera Rust for Data Engineering c12). Three structural invariants
+    spanning core, traversal, and community detection. All three are
+    asserted at runtime in `graph-cli` after every successful CLI
+    invocation; the YAML below is the formal spec linted by
+    `pv lint contracts/`.
+  references:
+    - 'rust-graph-algorithms README §Provable contracts'
+    - 'paiml/aprender (pv) — provable-contracts CLI'
+
+equations:
+  edge_count_consistent:
+    formula: 'sum(|neighbors(n)| for n in V) == graph.edge_count()'
+    domain: 'g ∈ Graph = (V, E) with adjacency lists'
+    codomain: 'bool'
+    lean_theorem: Theorems.Graph.EdgeCountConsistent
+    postconditions:
+    - 'sum(|neighbors(n)| for n in V) == graph.edge_count()'
+
+  pagerank_normalized:
+    formula: 'abs(sum(pagerank(g)) - 1.0) < tol'
+    domain: 'g ∈ Graph, scores ∈ Vec<f64>, tol ∈ f64'
+    codomain: 'bool'
+    lean_theorem: Theorems.Graph.PageRankNormalized
+    postconditions:
+    - 'abs(sum(scores) - 1.0) < tol'
+
+  components_partition:
+    formula: 'every node appears in exactly one component'
+    domain: 'g ∈ Graph, comps ∈ Vec<Vec<NodeId>>'
+    codomain: 'bool'
+    lean_theorem: Theorems.Graph.ComponentsPartition
+    postconditions:
+    - 'union(c for c in comps) == V'
+    - 'pairwise disjoint(comps)'
+
+proof_obligations:
+  - type: invariant
+    property: 'Edge count consistency'
+    formal: 'sum_n |neighbors(n)| = edge_count'
+    applies_to: all
+  - type: postcondition
+    property: 'PageRank normalization'
+    formal: '∀ g. |sum(pagerank(g)) - 1| < 1e-3'
+    applies_to: all
+  - type: postcondition
+    property: 'Component partition'
+    formal: '∀ g, comps. partition(comps) on V(g)'
+    applies_to: all
+
+enforcement:
+  edge_count_consistency:
+    description: 'Sum of neighbor list lengths must equal the recorded edge count.'
+    check: 'graph-cli runtime assert_eq! after every successful run'
+    severity: 'ERROR'
+  pagerank_normalization:
+    description: 'PageRank scores must sum to approximately 1.0.'
+    check: 'graph-cli runtime assert! after pagerank subcommand'
+    severity: 'ERROR'
+  components_partition:
+    description: 'Components must form a partition of the node set.'
+    check: 'graph-cli runtime assert! after components and scc subcommands'
+    severity: 'ERROR'
+
+falsification_tests:
+  - id: FALSIFY-GRAPH-001
+    rule: 'Edge count consistency'
+    prediction: 'For any Graph constructed via from_edges or add_directed/add_undirected, neighbor sum equals edge_count.'
+    test: 'graph-core::tests covers happy path; graph-cli runtime asserts on every CLI invocation.'
+    if_fails: 'Drift between adjacency lists and the cached edge_count counter — most likely add_directed not bumping the counter, or transpose forgetting to.'
+
+  - id: FALSIFY-GRAPH-002
+    rule: 'PageRank normalization'
+    prediction: 'Power iteration converges to a stochastic vector that sums to 1 within tol.'
+    test: 'graph-centrality::tests asserts via assert_pagerank_normalized; graph-cli asserts post-run on real CLI invocations.'
+    if_fails: 'Damping or teleport mass not balanced — sum drifts from 1.0 each iteration.'
+
+  - id: FALSIFY-GRAPH-003
+    rule: 'Component partition'
+    prediction: 'connected_components and kosaraju each return a partition of V.'
+    test: 'graph-community::tests cover both algorithms with assert_components_partition.'
+    if_fails: 'Either a node belongs to two components (overlap) or to none (missing).'
+
+qa_gate:
+  id: F-GRAPH-001
+  name: 'Graph Algorithms Contract'
+  description: 'Three structural invariants — edge count consistency, PageRank normalization, component partition — asserted on every successful graph-cli invocation.'
+  checks:
+    - 'edge_count_consistency'
+    - 'pagerank_normalization'
+    - 'components_partition'
+  pass_criteria: 'All three falsification tests pass; runtime asserts never fire in production.'
+
+kani_harnesses:
+  - id: KANI-GRAPH-001
+    obligation: 'Edge count consistency'
+    property: 'sum of neighbor list lengths equals edge_count for any Graph constructed via the public API'
+    bound: 4
+    strategy: exhaustive
+    harness: verify_edge_count_consistent
+  - id: KANI-GRAPH-002
+    obligation: 'PageRank normalization'
+    property: 'pagerank scores sum to within tol of 1.0 for any non-empty Graph'
+    bound: 4
+    strategy: exhaustive
+    harness: verify_pagerank_normalized
+  - id: KANI-GRAPH-003
+    obligation: 'Component partition'
+    property: 'connected_components returns a partition of the node set for any Graph'
+    bound: 4
+    strategy: exhaustive
+    harness: verify_components_partition

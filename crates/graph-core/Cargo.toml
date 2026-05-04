@@ -7,6 +7,11 @@ repository.workspace = true
 homepage.workspace = true
 authors.workspace = true
 rust-version.workspace = true
-description = " NodeId, Edge<W>, Graph, IO"
+description = "Shared graph types — NodeId, Edge, Graph, GraphError"
 
 [dependencies]
+serde = { workspace = true }
+thiserror = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true }

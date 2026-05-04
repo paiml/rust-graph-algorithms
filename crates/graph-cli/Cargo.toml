@@ -9,4 +9,21 @@ authors.workspace = true
 rust-version.workspace = true
 description = "clap binary exposing each algorithm as a subcommand"
 
+[[bin]]
+name = "graph"
+path = "src/main.rs"
+
 [dependencies]
+graph-core = { workspace = true }
+graph-traversal = { workspace = true }
+graph-centrality = { workspace = true }
+graph-community = { workspace = true }
+graph-viz = { workspace = true }
+clap = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+anyhow = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = { workspace = true }
+predicates = { workspace = true }

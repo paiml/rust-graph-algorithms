@@ -7,6 +7,7 @@ repository.workspace = true
 homepage.workspace = true
 authors.workspace = true
 rust-version.workspace = true
-description = "Degree, betweenness, closeness, PageRank"
+description = "Degree and PageRank centrality"
 
 [dependencies]
+graph-core = { workspace = true }
