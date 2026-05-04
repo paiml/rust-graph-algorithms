@@ -8,6 +8,7 @@ members = [
     "crates/graph-cli",
     "crates/aprender-demo",
     "crates/aprender-contracts-demo",
+    "crates/svg-layout-checker",
 ]
 resolver = "2"
 

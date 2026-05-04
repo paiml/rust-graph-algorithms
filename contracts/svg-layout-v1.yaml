@@ -1,0 +1,213 @@
+metadata:
+  version: 1.0.0
+  created: '2026-05-04'
+  author: 'PAIML Engineering'
+  description: |
+    Provable contracts for the c12 hand-authored SVG masters. Six
+    structural floors that every lesson-frame master in
+    `coursera-assets/c12-graph-algorithms/` must clear, plus four
+    aesthetic ceilings adapted from the c3-etl-pipelines reference.
+
+    These rules are the formal version of memory P0
+    `feedback-svg-no-templated-stamps.md` and `svg-style-defaults.md`.
+    They are checked locally by `rmedia svg validate` and
+    `rmedia svg-lint --strict`; this YAML is the spec linted by
+    `pv lint contracts/`.
+
+    Companion: Coursera Rust for Data Engineering c12, six SVG masters
+    (1.1.4 aprender-graph, 2.1.1 BFS/DFS, 2.1.2 Dijkstra, 3.1.4 PageRank,
+    4.1.2 Kosaraju, 5.1.5 pmat-query-with-aprender-contracts).
+  references:
+    - 'coursera-assets/c12-graph-algorithms/*.svg'
+    - 'rmedia svg-lint — text-y-overflow, text-container-overflow, TOKEN_SALAD'
+    - 'memory/svg-style-defaults.md (oxide-premium baseline)'
+    - 'memory/feedback-svg-no-templated-stamps.md (P0 anti-pattern)'
+
+equations:
+  canvas_size_invariant:
+    formula: 'svg.viewBox == "0 0 1920 1080"'
+    domain: 's ∈ Master SVG'
+    codomain: 'bool'
+    lean_theorem: Theorems.SvgLayout.CanvasSize
+    postconditions:
+    - 'svg.viewBox == "0 0 1920 1080"'
+
+  shape_floor:
+    formula: 'count(rect, circle, line, path, polygon, ellipse, text) >= 40'
+    domain: 's ∈ Master SVG'
+    codomain: 'bool'
+    lean_theorem: Theorems.SvgLayout.ShapeFloor
+    postconditions:
+    - 'shape_count(s) >= 40'
+
+  named_group_floor:
+    formula: 'count(g[id]) >= 5 AND count(g[id]) <= 20'
+    domain: 's ∈ Master SVG'
+    codomain: 'bool'
+    lean_theorem: Theorems.SvgLayout.NamedGroupFloor
+    postconditions:
+    - '5 <= named_group_count(s) <= 20'
+
+  fill_diversity_floor:
+    formula: 'count(distinct(fill[#xxxxxx])) >= 8'
+    domain: 's ∈ Master SVG'
+    codomain: 'bool'
+    lean_theorem: Theorems.SvgLayout.FillDiversity
+    postconditions:
+    - 'distinct_fills(s) >= 8'
+
+  font_size_floor:
+    formula: 'min(font-size) >= 18'
+    domain: 's ∈ Master SVG'
+    codomain: 'bool'
+    lean_theorem: Theorems.SvgLayout.FontSizeFloor
+    postconditions:
+    - 'min_font_size(s) >= 18'
+
+  no_validator_errors:
+    formula: 'rmedia svg-lint --strict produces 0 errors (warnings allowed)'
+    domain: 's ∈ Master SVG'
+    codomain: 'bool'
+    lean_theorem: Theorems.SvgLayout.NoLintErrors
+    postconditions:
+    - 'rmedia_lint_errors(s) == 0'
+
+proof_obligations:
+  - type: invariant
+    property: 'Canvas is 1920×1080 oxide-premium'
+    formal: 'viewBox = "0 0 1920 1080"'
+    applies_to: all
+  - type: invariant
+    property: 'At least 40 visual shapes'
+    formal: 'shape_count >= 40'
+    applies_to: all
+  - type: invariant
+    property: 'Between 5 and 20 named groups'
+    formal: '5 <= named_groups <= 20'
+    applies_to: all
+  - type: invariant
+    property: 'At least 8 distinct hex fill colors'
+    formal: 'distinct_fills >= 8'
+    applies_to: all
+  - type: invariant
+    property: 'Minimum text font-size is 18px'
+    formal: 'min_font_size >= 18'
+    applies_to: all
+  - type: postcondition
+    property: 'No rmedia svg-lint errors'
+    formal: 'lint_errors = 0'
+    applies_to: all
+
+enforcement:
+  canvas_dimensions:
+    description: 'Canvas viewBox is exactly "0 0 1920 1080".'
+    check: 'grep "viewBox" *.svg matches exact string'
+    severity: 'ERROR'
+  shape_floor:
+    description: 'At least 40 visual shapes per master (target 60+, c3 reference is ~107).'
+    check: 'shape count via grep -cE "<(rect|circle|line|path|polygon|ellipse|text)"'
+    severity: 'ERROR'
+  named_group_floor:
+    description: 'Between 5 and 20 named <g> elements per master.'
+    check: 'grep -c "<g " *.svg'
+    severity: 'ERROR'
+  fill_diversity_floor:
+    description: 'At least 8 distinct hex fill colors per master.'
+    check: 'sort -u of fill="#xxxxxx" attributes'
+    severity: 'ERROR'
+  font_size_floor:
+    description: 'Smallest font-size attribute is 18 or larger.'
+    check: 'min of font-size attribute integers'
+    severity: 'ERROR'
+  validator_clean:
+    description: 'rmedia svg-lint --strict produces 0 errors (warnings tolerable; insight-bar y-overflow at y~1058 is c3-reference-tolerated).'
+    check: 'rmedia svg validate per master in CI'
+    severity: 'ERROR'
+
+falsification_tests:
+  - id: FALSIFY-SVG-001
+    rule: 'Canvas size invariant'
+    prediction: 'Every master has viewBox="0 0 1920 1080".'
+    test: 'tests/svg_layout.rs::canvas_size'
+    if_fails: 'A master was authored at the wrong resolution; rmedia course --native will mis-render.'
+
+  - id: FALSIFY-SVG-002
+    rule: 'Shape floor'
+    prediction: 'Every master has 40 or more visual-shape elements.'
+    test: 'tests/svg_layout.rs::shape_floor'
+    if_fails: 'A master is too sparse — likely a templated-stamp regression (memory P0 svg-no-templated-stamps).'
+
+  - id: FALSIFY-SVG-003
+    rule: 'Named-group floor + ceiling'
+    prediction: 'Every master has 5..20 named <g> elements.'
+    test: 'tests/svg_layout.rs::named_group_floor'
+    if_fails: 'Either insufficient structural decomposition (<5) or runaway grouping (>20) — both signal a hand-authoring regression.'
+
+  - id: FALSIFY-SVG-004
+    rule: 'Fill diversity floor'
+    prediction: 'Every master uses 8 or more distinct hex fill colors.'
+    test: 'tests/svg_layout.rs::fill_diversity'
+    if_fails: 'Visual monotony — likely a single-palette stamp regression.'
+
+  - id: FALSIFY-SVG-005
+    rule: 'Minimum font-size floor'
+    prediction: 'No <text> or <tspan> uses font-size below 18.'
+    test: 'tests/svg_layout.rs::font_size_floor'
+    if_fails: 'Coursera shell rendering breaks below 18px; legibility regression.'
+
+  - id: FALSIFY-SVG-006
+    rule: 'rmedia svg-lint clean (errors only)'
+    prediction: 'rmedia svg validate produces 0 ERROR-level findings.'
+    test: 'tests/svg_layout.rs::no_validator_errors'
+    if_fails: 'Token salad, text-text overlap, or layout drift caught by the validator.'
+
+qa_gate:
+  id: F-SVG-001
+  name: 'SVG Layout Contract'
+  description: 'Six structural floors and one validator-clean ceiling on every c12 lesson-frame master.'
+  checks:
+    - 'canvas_dimensions'
+    - 'shape_floor'
+    - 'named_group_floor'
+    - 'fill_diversity_floor'
+    - 'font_size_floor'
+    - 'validator_clean'
+  pass_criteria: 'All six falsification tests pass on every master in coursera-assets/c12-graph-algorithms/.'
+
+kani_harnesses:
+  - id: KANI-SVG-001
+    obligation: 'Canvas size is 1920×1080'
+    property: 'svg.viewBox attribute is the exact "0 0 1920 1080" string'
+    bound: 1
+    strategy: exhaustive
+    harness: verify_svg_canvas_size
+  - id: KANI-SVG-002
+    obligation: 'Shape floor (>= 40)'
+    property: 'every master ships with at least 40 visual-shape elements'
+    bound: 1
+    strategy: exhaustive
+    harness: verify_svg_shape_floor
+  - id: KANI-SVG-003
+    obligation: 'Named-group bounds [5, 20]'
+    property: 'named-group count is in the [5, 20] interval'
+    bound: 1
+    strategy: exhaustive
+    harness: verify_svg_named_groups
+  - id: KANI-SVG-004
+    obligation: 'Fill diversity (>= 8 distinct fills)'
+    property: 'distinct hex fills is at least 8'
+    bound: 1
+    strategy: exhaustive
+    harness: verify_svg_fill_diversity
+  - id: KANI-SVG-005
+    obligation: 'Min font-size 18'
+    property: 'no font-size attribute below 18'
+    bound: 1
+    strategy: exhaustive
+    harness: verify_svg_font_size_floor
+  - id: KANI-SVG-006
+    obligation: 'No validator errors'
+    property: 'rmedia svg-lint --strict reports 0 ERROR findings'
+    bound: 1
+    strategy: exhaustive
+    harness: verify_svg_no_validator_errors
