@@ -33,8 +33,8 @@ pub struct Binding {
     pub matches: Vec<String>,
 }
 
-/// Outcome of running a [`QueryRunner`]-style closure across every
-/// obligation in a parsed contract.
+/// Outcome of running a runner closure across every obligation in a
+/// parsed contract.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct BindingReport {
     /// Contract version (from `metadata.version`).
