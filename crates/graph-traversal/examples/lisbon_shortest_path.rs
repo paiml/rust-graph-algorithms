@@ -31,17 +31,17 @@ fn main() {
     let cathedral = g.add_node("Lisbon Cathedral");
 
     let edges: &[(NodeIndex, NodeIndex, u32)] = &[
-        (belem_tower, jeronimos, 5),    // 0.5 km — across the square
-        (jeronimos, lx_factory, 15),    // 1.5 km — east along the river
-        (lx_factory, alcantara, 10),    // 1.0 km
-        (alcantara, cais_sodre, 25),    // 2.5 km
-        (cais_sodre, comercio, 17),     // 1.7 km — Tagus waterfront
-        (comercio, santa_justa, 5),     // 0.5 km
-        (comercio, cathedral, 8),       // 0.8 km — direct uphill
-        (santa_justa, castelo, 7),      // 0.7 km
-        (castelo, cathedral, 4),        // 0.4 km
-        (jeronimos, comercio, 70),      // 7.0 km — long taxi route, kept
-                                        // as a plausible alternative
+        (belem_tower, jeronimos, 5), // 0.5 km — across the square
+        (jeronimos, lx_factory, 15), // 1.5 km — east along the river
+        (lx_factory, alcantara, 10), // 1.0 km
+        (alcantara, cais_sodre, 25), // 2.5 km
+        (cais_sodre, comercio, 17),  // 1.7 km — Tagus waterfront
+        (comercio, santa_justa, 5),  // 0.5 km
+        (comercio, cathedral, 8),    // 0.8 km — direct uphill
+        (santa_justa, castelo, 7),   // 0.7 km
+        (castelo, cathedral, 4),     // 0.4 km
+        (jeronimos, comercio, 70),   // 7.0 km — long taxi route, kept
+                                     // as a plausible alternative
     ];
     for &(a, b, w) in edges {
         g.add_edge(a, b, w);

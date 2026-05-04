@@ -62,7 +62,12 @@ fn main() {
             .iter()
             .map(|&i| *g.node_weight(i).expect("node weight present"))
             .collect();
-        println!("  SCC {} ({} nodes): {}", i + 1, names.len(), names.join(", "));
+        println!(
+            "  SCC {} ({} nodes): {}",
+            i + 1,
+            names.len(),
+            names.join(", ")
+        );
     }
 
     // Provable contract: exactly two non-trivial communities (size ≥ 2).

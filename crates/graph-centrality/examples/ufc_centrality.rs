@@ -32,9 +32,15 @@ fn main() {
 
     // Five well-known UFC fighters and the seven bouts the Duke lesson
     // walks through on screen.
-    let poirier = g.add_node(Fighter { name: "Dustin Poirier" });
-    let khabib = g.add_node(Fighter { name: "Khabib Nurmagomedov" });
-    let mcgregor = g.add_node(Fighter { name: "Conor McGregor" });
+    let poirier = g.add_node(Fighter {
+        name: "Dustin Poirier",
+    });
+    let khabib = g.add_node(Fighter {
+        name: "Khabib Nurmagomedov",
+    });
+    let mcgregor = g.add_node(Fighter {
+        name: "Conor McGregor",
+    });
     let aldo = g.add_node(Fighter { name: "Jose Aldo" });
     let diaz = g.add_node(Fighter { name: "Nate Diaz" });
 
