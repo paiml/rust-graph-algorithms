@@ -1,0 +1,121 @@
+metadata:
+  version: 1.0.0
+  created: '2026-05-04'
+  author: 'PAIML Engineering'
+  description: |
+    Provable contracts for `aprender-contracts-demo` — the working demo
+    crate that parses a real YAML contract via `provable_contracts::schema`
+    and discovers code bindings by shelling out to `pmat query` per
+    obligation.
+
+    Two runtime invariants are enforced by the public-API design and
+    asserted by the test suite; the YAML below is the formal spec linted
+    by `pv lint contracts/`.
+
+    Companion: Coursera Rust for Data Engineering c12, lesson 5.1.5.
+  references:
+    - 'rust-graph-algorithms/crates/aprender-contracts-demo/src/lib.rs'
+    - 'aprender-contracts 0.31.2 — https://docs.rs/aprender-contracts/0.31.2'
+    - 'pmat 3.16.0 — pmat query — semantic code search with quality annotations'
+
+equations:
+  binding_count_matches_term_count:
+    formula: 'len(report.bindings) == len(extract_query_terms(contract))'
+    domain: 'contract ∈ Contract, runner: FnMut(&str) -> Result<Vec<String>>'
+    codomain: 'BindingReport'
+    lean_theorem: Theorems.AprenderContractsDemo.OneBindingPerTerm
+    postconditions:
+    - 'report.bindings.len() == extract_query_terms(contract).len()'
+
+  binding_terms_preserved_verbatim:
+    formula: 'forall i. report.bindings[i].term == extract_query_terms(contract)[i]'
+    domain: 'contract ∈ Contract, runner: FnMut(&str) -> Result<Vec<String>>'
+    codomain: 'BindingReport'
+    lean_theorem: Theorems.AprenderContractsDemo.TermsPreserved
+    postconditions:
+    - 'report.bindings[i].term == extract_query_terms(contract)[i] for every i'
+
+  empty_property_obligations_are_skipped:
+    formula: 'extract_query_terms(c) excludes obligations with empty/whitespace property'
+    domain: 'c ∈ Contract'
+    codomain: 'Vec<String>'
+    lean_theorem: Theorems.AprenderContractsDemo.EmptyPropertiesSkipped
+    postconditions:
+    - 'every term in extract_query_terms(c) has property.trim().non_empty()'
+
+proof_obligations:
+  - type: postcondition
+    property: 'BindingReport one binding per non-empty obligation property'
+    formal: 'len(report.bindings) = count(o in c.proof_obligations | o.property.trim() != "")'
+    applies_to: all
+  - type: postcondition
+    property: 'BindingReport preserves obligation term text verbatim'
+    formal: 'report.bindings[i].term = extract_query_terms(c)[i]'
+    applies_to: all
+  - type: postcondition
+    property: 'discover_bindings_with propagates runner errors with context'
+    formal: 'runner(t) = Err(e) implies discover_bindings_with(c, runner) = Err(e_context)'
+    applies_to: all
+
+enforcement:
+  one_binding_per_term:
+    description: 'BindingReport contains one Binding per non-empty obligation property.'
+    check: 'aprender-contracts-demo unit test discover_bindings_calls_runner_per_term'
+    severity: 'ERROR'
+  terms_preserved:
+    description: 'Each binding term equals the original obligation property.'
+    check: 'aprender-contracts-demo unit test discover_bindings_preserves_term_text_verbatim'
+    severity: 'ERROR'
+  runner_error_context:
+    description: 'Runner failures bubble up with "query for {term:?}" context.'
+    check: 'aprender-contracts-demo unit test discover_bindings_propagates_runner_error'
+    severity: 'ERROR'
+
+falsification_tests:
+  - id: FALSIFY-CONTRACTS-001
+    rule: 'BindingReport one binding per term'
+    prediction: 'For the bundled aprender-demo-v1.yaml (3 obligations), discover_bindings_with returns a report with exactly 3 bindings.'
+    test: 'aprender-contracts-demo::tests::discover_bindings_calls_runner_per_term'
+    if_fails: 'Either aprender-demo-v1.yaml lost an obligation or extract_query_terms started filtering wrong inputs.'
+
+  - id: FALSIFY-CONTRACTS-002
+    rule: 'Empty-property skip rule'
+    prediction: 'Obligations with empty or whitespace property are excluded from the term list.'
+    test: 'aprender-contracts-demo::tests::extract_query_terms_skips_empty_properties'
+    if_fails: 'extract_query_terms regression — invalid empty-string queries would reach pmat.'
+
+  - id: FALSIFY-CONTRACTS-003
+    rule: 'Runner-error context'
+    prediction: 'A failing runner closure produces an anyhow::Error whose chain contains "query for".'
+    test: 'aprender-contracts-demo::tests::discover_bindings_propagates_runner_error'
+    if_fails: 'Operators see opaque pmat failures with no obligation-term context — debugging breaks.'
+
+qa_gate:
+  id: F-CONTRACTS-001
+  name: 'Aprender Contracts Demo Contract'
+  description: 'Three structural invariants on the contracts-demo crate — one-binding-per-term, terms-preserved, runner-error context.'
+  checks:
+    - 'one_binding_per_term'
+    - 'terms_preserved'
+    - 'runner_error_context'
+  pass_criteria: 'All three falsification tests pass; lib code is 100% line + function covered.'
+
+kani_harnesses:
+  - id: KANI-CONTRACTS-001
+    obligation: 'BindingReport one binding per term'
+    property: 'len(report.bindings) = len(extract_query_terms(c)) for every (c, runner)'
+    bound: 4
+    strategy: exhaustive
+    harness: verify_one_binding_per_term
+  - id: KANI-CONTRACTS-002
+    obligation: 'Term text preserved verbatim'
+    property: 'binding.term equals the originating obligation property string'
+    bound: 4
+    strategy: exhaustive
+    harness: verify_terms_preserved
+  - id: KANI-CONTRACTS-003
+    obligation: 'Runner-error context propagation'
+    property: 'runner(t) = Err implies returned error chain contains "query for"'
+    bound: 4
+    strategy: exhaustive
+    harness: verify_runner_error_context

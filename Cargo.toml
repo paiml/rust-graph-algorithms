@@ -7,6 +7,7 @@ members = [
     "crates/graph-viz",
     "crates/graph-cli",
     "crates/aprender-demo",
+    "crates/aprender-contracts-demo",
 ]
 resolver = "2"
 

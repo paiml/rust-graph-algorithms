@@ -1,0 +1,17 @@
+[package]
+name = "aprender-contracts-demo"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+authors.workspace = true
+rust-version.workspace = true
+description = "Working demo of aprender-contracts (lib name `provable_contracts`) — parse a YAML contract, discover bindings via pmat query"
+
+[dependencies]
+aprender-contracts = "0.31.2"
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
