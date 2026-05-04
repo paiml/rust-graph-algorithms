@@ -11,3 +11,10 @@ description = "BFS, DFS, Dijkstra"
 
 [dependencies]
 graph-core = { workspace = true }
+
+[dev-dependencies]
+petgraph = "0.8"
+
+[[example]]
+name = "lisbon_shortest_path"
+path = "examples/lisbon_shortest_path.rs"

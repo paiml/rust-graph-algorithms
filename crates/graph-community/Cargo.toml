@@ -11,3 +11,10 @@ description = "Connected components and Kosaraju SCC"
 
 [dependencies]
 graph-core = { workspace = true }
+
+[dev-dependencies]
+petgraph = "0.8"
+
+[[example]]
+name = "twitter_communities"
+path = "examples/twitter_communities.rs"
