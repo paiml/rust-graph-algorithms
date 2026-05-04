@@ -96,14 +96,14 @@
   <circle cx="930" cy="220" r="10" fill="#78dce8" fill-opacity="0.85" stroke="#eeeeee" stroke-width="2"/>
   <text x="952" y="226" class="m" font-size="18" fill="#c8ccd4">
     <tspan class="label" font-weight="700" fill="#78dce8">BFS</tspan>
-    <tspan dx="32">graph_traversal::bfs</tspan>
+    <tspan dx="32">queue frontier</tspan>
   </text>
 
   <rect x="900" y="248" width="340" height="40" rx="20" fill="url(#card-chip)" stroke="#fc9867" stroke-width="2"/>
   <circle cx="930" cy="268" r="10" fill="#fc9867" fill-opacity="0.85" stroke="#eeeeee" stroke-width="2"/>
   <text x="952" y="274" class="m" font-size="18" fill="#c8ccd4">
     <tspan class="label" font-weight="700" fill="#fc9867">DFS</tspan>
-    <tspan dx="32">graph_traversal::dfs</tspan>
+    <tspan dx="32">stack frontier</tspan>
   </text>
 
   <rect x="900" y="296" width="340" height="40" rx="20" fill="url(#card-chip)" stroke="#a9dc76" stroke-width="2"/>
