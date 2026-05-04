@@ -1,4 +1,4 @@
-//! Working demo of `aprender-graph` (re-exported as `trueno_graph`).
+//! Working demo of `aprender-graph` 0.31.2.
 //!
 //! Companion code for Coursera **Rust for Data Engineering c12 — Graph
 //! Algorithms with Rust**, lesson 1.1.4 (aprender-graph quickstart).
@@ -17,7 +17,7 @@
 #![deny(missing_docs)]
 
 use anyhow::{Context, Result};
-use trueno_graph::{CsrGraph, NodeId};
+use aprender_graph::{CsrGraph, NodeId};
 
 /// Whatever the demo run produced. Every field is observable so the
 /// SVG, the lesson narration, and any external copy can be falsified
@@ -61,9 +61,9 @@ pub fn run_demo() -> Result<DemoReport> {
     let g = build_demo_graph()?;
     let num_nodes = g.num_nodes();
 
-    let bfs_order = trueno_graph::bfs(&g, NodeId(0)).context("bfs")?;
-    let pagerank = trueno_graph::pagerank(&g, 200, 1e-9).context("pagerank")?;
-    let sccs = trueno_graph::kosaraju_scc(&g);
+    let bfs_order = aprender_graph::bfs(&g, NodeId(0)).context("bfs")?;
+    let pagerank = aprender_graph::pagerank(&g, 200, 1e-9).context("pagerank")?;
+    let sccs = aprender_graph::kosaraju_scc(&g);
 
     let pagerank_sum: f32 = pagerank.iter().sum();
     let winner = pick_winner(&pagerank).context("pagerank produced no scores")?;
