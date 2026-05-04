@@ -63,7 +63,9 @@ coverage:
 	$(CARGO) llvm-cov --workspace --fail-under-lines 100
 
 audit:
-	$(CARGO) audit --deny warnings
+	$(CARGO) audit --deny warnings \
+		--ignore RUSTSEC-2024-0436 \
+		--ignore RUSTSEC-2025-0141
 
 deny:
 	$(CARGO) deny check

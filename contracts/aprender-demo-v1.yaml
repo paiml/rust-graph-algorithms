@@ -1,0 +1,121 @@
+metadata:
+  version: 1.0.0
+  created: '2026-05-04'
+  author: 'PAIML Engineering'
+  description: |
+    Provable contracts for `aprender-demo` — the working demo crate
+    that drives the real `aprender-graph 0.31.2` (re-exported as
+    `trueno_graph`) on a 5-node fixture graph.
+
+    Two runtime invariants are asserted in `run_demo()` after every
+    successful run; the YAML below is the formal spec linted by
+    `pv lint contracts/`.
+
+    Companion: Coursera Rust for Data Engineering c12, lesson 1.1.4.
+  references:
+    - 'rust-graph-algorithms/crates/aprender-demo/src/lib.rs'
+    - 'aprender-graph 0.31.2 — https://docs.rs/aprender-graph/0.31.2'
+    - 'paiml/aprender-graph (pv) — provable-contracts CLI'
+
+equations:
+  demo_pagerank_normalized:
+    formula: 'abs(sum(pagerank(g)) - 1.0) < tol'
+    domain: 'g ∈ CsrGraph (the 5-node demo fixture), tol ∈ f32'
+    codomain: 'bool'
+    lean_theorem: Theorems.AprenderDemo.PageRankNormalized
+    postconditions:
+    - 'abs(sum(report.pagerank) - 1.0) < 1e-3'
+
+  demo_components_partition:
+    formula: 'every node 0..g.num_nodes() appears in exactly one SCC'
+    domain: 'g ∈ CsrGraph, comps ∈ Vec<Vec<NodeId>>'
+    codomain: 'bool'
+    lean_theorem: Theorems.AprenderDemo.ComponentsPartition
+    postconditions:
+    - 'union(c for c in report.sccs) == 0..report.num_nodes'
+    - 'pairwise disjoint(report.sccs)'
+
+  demo_winner_is_node_2:
+    formula: 'argmax(pagerank(g)) == 2'
+    domain: 'g ∈ CsrGraph (the 5-node demo fixture)'
+    codomain: 'NodeId'
+    lean_theorem: Theorems.AprenderDemo.WinnerIsHub
+    postconditions:
+    - 'report.winner == 2'
+
+proof_obligations:
+  - type: postcondition
+    property: 'PageRank normalization on the demo fixture'
+    formal: '|sum(report.pagerank) - 1| < 1e-3'
+    applies_to: all
+  - type: postcondition
+    property: 'SCC partition on the demo fixture'
+    formal: '∀ c in report.sccs. partition(c) on V(g)'
+    applies_to: all
+  - type: postcondition
+    property: 'Hub node 2 is the PageRank winner'
+    formal: 'argmax(report.pagerank) = 2'
+    applies_to: all
+
+enforcement:
+  pagerank_normalization:
+    description: 'Sum of PageRank scores is approximately 1.0.'
+    check: 'aprender-demo runtime assert! after run_demo()'
+    severity: 'ERROR'
+  components_partition:
+    description: 'Kosaraju output partitions the node set.'
+    check: 'aprender-demo runtime assert! after run_demo()'
+    severity: 'ERROR'
+  winner_invariant:
+    description: 'Node 2 is the unique highest-PageRank node.'
+    check: 'aprender-demo unit test winner_is_node_2'
+    severity: 'ERROR'
+
+falsification_tests:
+  - id: FALSIFY-DEMO-001
+    rule: 'PageRank normalization on the fixture'
+    prediction: 'For the 5-node demo graph, aprender-graph::pagerank(g, 200, 1e-9) returns scores summing to 1.0 ± 1e-3.'
+    test: 'aprender-demo::tests::assert_pagerank_normalized_passes_on_real_run'
+    if_fails: 'Either the demo graph topology changed or aprender-graph drifted; either way the SVG bar-chart heights and conveyor numbers are stale.'
+
+  - id: FALSIFY-DEMO-002
+    rule: 'Component partition on the fixture'
+    prediction: 'kosaraju_scc returns 3 components: {0}, {1}, {2,3,4} that partition V(g) = {0,1,2,3,4}.'
+    test: 'aprender-demo::tests::sccs_are_3_components_with_hub_cycle'
+    if_fails: 'aprender-graph SCC implementation drifted, or the demo edges changed.'
+
+  - id: FALSIFY-DEMO-003
+    rule: 'Hub-node invariant'
+    prediction: 'argmax(pagerank) is always node 2 on the 5-node demo graph.'
+    test: 'aprender-demo::tests::winner_is_node_2'
+    if_fails: 'Algorithm or graph drift; the lesson narration about "node 2 is the hub" is no longer accurate.'
+
+qa_gate:
+  id: F-DEMO-001
+  name: 'Aprender Demo Contract'
+  description: 'Three structural invariants on the 5-node demo fixture — PageRank normalization, SCC partition, hub-node 2 always wins.'
+  checks:
+    - 'pagerank_normalization'
+    - 'components_partition'
+    - 'winner_invariant'
+  pass_criteria: 'All three falsification tests pass; runtime asserts in run_demo() never fire.'
+
+kani_harnesses:
+  - id: KANI-DEMO-001
+    obligation: 'PageRank normalization on the fixture'
+    property: 'Sum of pagerank(demo_graph) is within 1e-3 of 1.0'
+    bound: 1
+    strategy: exhaustive
+    harness: verify_demo_pagerank_normalized
+  - id: KANI-DEMO-002
+    obligation: 'SCC partition on the fixture'
+    property: 'kosaraju_scc partitions V(demo_graph)'
+    bound: 1
+    strategy: exhaustive
+    harness: verify_demo_components_partition
+  - id: KANI-DEMO-003
+    obligation: 'Hub-node invariant'
+    property: 'argmax(pagerank(demo_graph)) = NodeId(2)'
+    bound: 1
+    strategy: exhaustive
+    harness: verify_demo_winner_is_hub
