@@ -50,7 +50,7 @@ linted by `pv lint contracts/` in CI.
 | Crate | Role |
 |-------|------|
 | [`aprender-demo`](crates/aprender-demo) | Working demo of real `aprender-graph 0.31.2`. Builds a 5-node fixture, runs BFS / PageRank / Kosaraju, asserts three runtime contracts. Companion to lesson 1.1.4. |
-| [`aprender-contracts-demo`](crates/aprender-contracts-demo) | Parses YAML contracts via `provable_contracts::schema`, shells out to `pmat query` to discover bound functions, returns a typed `BindingReport`. Companion to lesson 5.1.5. |
+| [`aprender-contracts-demo`](crates/aprender-contracts-demo) | Parses YAML contracts via `provable_contracts::schema`, shells out to `pmat query` to discover bound functions, returns a typed `BindingReport`. Reference implementation of the provable-contracts pattern shared by every YAML in [`contracts/`](contracts). |
 | [`svg-layout-checker`](crates/svg-layout-checker) | Falsifier for the c12 SVG layout contract — five structural floors (canvas size, shape count, named-group bounds, fill diversity, font-size floor) checked against any SVG source. |
 
 > **Namespace note.** `aprender-graph` 0.31.2 keeps a legacy
@@ -118,6 +118,27 @@ cargo run -p aprender-contracts-demo --example discover
 ```
 
 Requires `pmat` on PATH.
+
+## Quick start — Coursera c12 lesson companions
+
+Four runnable examples that mirror the worked problems in the c12 demo
+lessons. Each uses `petgraph` (matches what the lesson SRT shows on
+screen) and asserts a runtime contract that fails loudly if the example
+data drifts from what the lesson script demonstrates. The docstring on
+each example links to the equivalent workspace-crate algorithm.
+
+| Lesson | Example | What it shows | Run |
+|---|---|---|---|
+| 2.1.3 | [`lisbon_shortest_path`](crates/graph-traversal/examples/lisbon_shortest_path.rs) | Dijkstra on a hand-curated Lisbon monument graph; Belém Tower → Lisbon Cathedral = 8.0 km | `cargo run -p graph-traversal --example lisbon_shortest_path` |
+| 3.1.5 | [`pagerank_sports`](crates/graph-centrality/examples/pagerank_sports.rs) | PageRank (damping 0.85) over a 6-node sports-site graph (ESPN, NFL, NBA, USPN, UFC, MLB) | `cargo run -p graph-centrality --example pagerank_sports` |
+| 3.1.6 | [`ufc_centrality`](crates/graph-centrality/examples/ufc_centrality.rs) | Degree centrality on an undirected `Fighter` graph (Poirier, Khabib, McGregor, Aldo, Diaz) | `cargo run -p graph-centrality --example ufc_centrality` |
+| 4.1.3 | [`twitter_communities`](crates/graph-community/examples/twitter_communities.rs) | Kosaraju SCC on a follower graph mixing a journalist clique with a Neo4j-style troll cluster | `cargo run -p graph-community --example twitter_communities` |
+
+## Tooling examples
+
+| Example | What it does | Run |
+|---|---|---|
+| [`svg-layout-checker check_masters`](crates/svg-layout-checker/examples/check_masters.rs) | Reads every SVG (master + frame reveals) under a course-assets directory and reports any layout-contract failures (canvas size, shape floor, named-group bounds, fill diversity, font-size floor). | `cargo run -p svg-layout-checker --example check_masters -- <course-asset-dir>` |
 
 ## Local CI gate
 
