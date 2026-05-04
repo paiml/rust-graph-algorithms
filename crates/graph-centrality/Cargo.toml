@@ -11,3 +11,14 @@ description = "Degree and PageRank centrality"
 
 [dependencies]
 graph-core = { workspace = true }
+
+[dev-dependencies]
+petgraph = "0.8"
+
+[[example]]
+name = "pagerank_sports"
+path = "examples/pagerank_sports.rs"
+
+[[example]]
+name = "ufc_centrality"
+path = "examples/ufc_centrality.rs"
