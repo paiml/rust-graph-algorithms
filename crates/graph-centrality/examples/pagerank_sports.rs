@@ -51,7 +51,12 @@ fn main() {
 
     let mut ranked: Vec<(&&str, f64)> = g
         .node_indices()
-        .map(|i| (g.node_weight(i).expect("node weight present"), scores[i.index()]))
+        .map(|i| {
+            (
+                g.node_weight(i).expect("node weight present"),
+                scores[i.index()],
+            )
+        })
         .collect();
     ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).expect("scores are finite"));
 
